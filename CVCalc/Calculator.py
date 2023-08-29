@@ -116,6 +116,20 @@ def calculate_crit_value(event=None):
 
             result_label.config(text="Character Crit Value:", font=("Trebuchet MS", 20))
             crit_value_label.config(text=f"{CritValue:.1f}", font=("Trebuchet MS", 24, "bold"))
+            
+            if 0.0 <= CritValue < 90.0:
+                crit_message_label.config(text="Your character's Crit Value is too low.")
+            elif 90.0 <= CritValue < 150.0:
+                crit_message_label.config(text="Your character's Crit Value is decent.")
+            elif 150.0 <= CritValue < 180.0:
+                crit_message_label.config(text="Your character's Crit Value is moderate.")
+            elif 180.0 <= CritValue < 200.0:
+                crit_message_label.config(text="Your character's Crit Value is good!")
+            elif CritValue >= 200.0:
+                crit_message_label.config(text="Your character's Crit Value is enough, go do a Spiral Abyss!")
+            else:
+                crit_message_label.config(text="")
+
         except ValueError:
             result_label.config(text="Invalid input. Please check your values.")
             crit_value_label.config(text="")
@@ -193,6 +207,9 @@ result_label.pack()
 
 crit_value_label = tk.Label(root, text="", font=("Trebuchet MS", 24, "bold"))
 crit_value_label.pack()
+
+crit_message_label = tk.Label(root, text="", font=("Trebuchet MS", 16))
+crit_message_label.pack()
 
 # Create a list of character names
 character_names = [info["name"] for info in character_info]
