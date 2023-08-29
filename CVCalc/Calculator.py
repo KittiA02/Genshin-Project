@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import ttk, PhotoImage
+from ttkwidgets.autocomplete import AutocompleteCombobox
 from PIL import Image, ImageTk
 
 # Character data stored as dictionaries
@@ -35,7 +36,7 @@ character_info = [
     {"name": "Venti", "image": "picture/Venti_Icon.png"},
     {"name": "Wanderer", "image": "picture/Wanderer_Icon.png"},
     {"name": "Yae Miko", "image": "picture/Yae_Miko_Icon.png"},
-    {"name": "Yenfei", "image": "picture/Yenfei_Icon.png"},
+    {"name": "Yanfei", "image": "picture/Yanfei_Icon.png"},
     {"name": "Yelan", "image": "picture/Yelan_Icon.png"},
     {"name": "Yoimiya", "image": "picture/Yoimiya_Icon.png"},
     {"name": "Xiao", "image": "picture/Xiao_Icon.png"},
@@ -131,6 +132,12 @@ def previous_character():
     global current_character_index
     current_character_index = (current_character_index - 1) % len(characters)
     update_character()
+    
+def on_character_selection(event):
+    update_character()
+    
+    # Set the combobox value again to ensure it's responsive after button presses
+    character_selection.set(character_names[current_character_index])
 
 root = tk.Tk()
 root.title("Character Crit Value Calculator")
@@ -190,9 +197,15 @@ crit_value_label.pack()
 # Create a list of character names
 character_names = [info["name"] for info in character_info]
 
-# Create a dropdown list (combobox) for character selection
-character_selection = ttk.Combobox(root, text="Characters Avaliable", values=character_names, font=("Open Sans", 12))
+# Create an AutocompleteCombobox for character selection
+character_selection = AutocompleteCombobox(root, font=("Open Sans", 12))
+character_selection.set_completion_list(character_names)
 character_selection.pack()
+character_selection.bind("<<ComboboxSelected>>", on_character_selection)
+
+# Set the initial selection and trigger the event
+character_selection.set(character_names[0])
+on_character_selection(None)
 
 # Create a frame to hold the navigation buttons
 navigation_frame = tk.Frame(root)
@@ -203,12 +216,8 @@ previous_character_button = tk.Button(navigation_frame, text="Previous Character
 previous_character_button.pack(side="left", padx=10)
 
 # Create "Next Character" button
-next_character_button = tk.Button(navigation_frame, text="Next Character", command=next_character, font=("Trebuchet MS", 14))
+next_character_button = tk.Button(navigation_frame, text="Select/Next Character", command=next_character, font=("Trebuchet MS", 14))
 next_character_button.pack(side="left", padx=10)
-
-# Create "Select" button
-update_character_button = tk.Button(root, text="Select", command=update_character, font=("Trebuchet MS", 14))
-update_character_button.pack(pady=5)
 
 # Pack the navigation frame after the "Select" button
 navigation_frame.pack(pady=5)
