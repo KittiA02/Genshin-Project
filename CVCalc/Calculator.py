@@ -69,6 +69,7 @@ def update_view():
     else:
         banner_label.pack()
         start_button.pack()
+    update_select_button_state()  # Update the "Select Character" button state
 
 def update_character():
     global current_character_index
@@ -153,28 +154,29 @@ def start_calculator():
     banner_label.pack_forget()  # Hide the banner
     start_button.pack_forget()   # Hide the start button
     calculator_frame.pack()      # Show the calculator frame
-  
-def update_select_button_state(event=None):
-    selected_character = character_selection.get()
-    if selected_character and selected_character in character_names:
-        select_character_button.config(state="normal")
-    else:
-        select_character_button.config(state="disabled")
+
+def update_dropdown_list():
+    search_text = character_selection.get().lower()
+    matching_names = [name for name in character_names if search_text in name.lower()]
+    character_selection.set_completion_list(matching_names)
+    update_select_button_state()
 
 def on_search_bar_change(event):
     search_text = character_selection.get().lower()
     matching_names = [name for name in character_names if search_text in name.lower()]
     character_selection.set_completion_list(matching_names)
     
-    update_select_button_state()
+    if search_text in character_names:
+        select_character_button.config(state="normal")
+    else:
+        select_character_button.config(state="disabled")
     
 def select_character():
-    global current_character_index
-    current_character_index = character_names.index(character_selection.get())
     update_character()
-    select_character_button.config(state="disabled")
-    crit_message_label.config(text="")  # Clear the crit message
     character_selection.set("")  # Clear the search box
+    update_dropdown_list()  # Clear the dropdown list to default
+    select_character_button.config(state="disabled")  # Disable the "Select Character" button
+
 
 def next_character():
     global current_character_index
@@ -186,6 +188,14 @@ def previous_character():
     current_character_index = (current_character_index - 1) % len(characters)
     update_character()
     
+def update_select_button_state(event=None):
+    selected_character = character_selection.get()
+    if selected_character and selected_character in character_names:
+        select_character_button.config(state="normal")
+    else:
+        select_character_button.config(state="disabled")
+
+
 root = tk.Tk()
 root.title("Character Crit Value Calculator")
 root.geometry("700x925")  # Set the window's fixed width and height
@@ -206,7 +216,7 @@ image_label = tk.Label(root, image=image)
 image_label.pack()
 
 # Create a "Start" button to initiate the calculator
-start_button = tk.Button(root, text="Start Calculator", command=start_calculator, font=("Trebuchet MS", 14))
+start_button = tk.Button(root, text="Start Calculator", command=start_calculator, font=("Trebuchet MS", 16, "bold"))
 start_button.pack()
 
 # Create a frame to hold the calculator widgets
@@ -267,11 +277,6 @@ character_selection.bind("<<ComboboxSelected>>", update_select_button_state)
 character_selection.bind("<KeyRelease>", on_search_bar_change)
 
 
-# Create "Select Character" button
-select_character_button = tk.Button(root, text="Select Character", command=select_character, font=("Trebuchet MS", 14))
-select_character_button.pack(side="right", padx=10)
-select_character_button.config(state="disabled")  # Initially disabled
-
 # Create a frame to hold the navigation buttons
 navigation_frame = tk.Frame(root)
 navigation_frame.pack(pady=10)
@@ -281,8 +286,22 @@ previous_character_button = tk.Button(navigation_frame, text="Previous Character
 previous_character_button.pack(side="left", padx=10)
 
 # Create "Next Character" button
-next_character_button = tk.Button(navigation_frame, text="Next Character", command=next_character, font=("Trebuchet MS", 14))
-next_character_button.pack(side="right", padx=10)
+next_character_button = tk.Button(navigation_frame, text="Search / Next Character", command=next_character, font=("Trebuchet MS", 14))
+next_character_button.pack(side="left", padx=10)
+
+# Pack the navigation frame after the buttons
+navigation_frame.pack(pady=5)
+
+# Create a frame to hold the "Select Character" button
+select_button_frame = tk.Frame(root)
+select_button_frame.pack(pady=5)
+
+# Create "Select Character" button
+select_character_button = tk.Button(select_button_frame, text="Select this character from dropbox", command=select_character, font=("Trebuchet MS", 14))
+select_character_button.pack()
+
+# Pack the select_button_frame after the navigation_frame
+select_button_frame.pack()
 
 # Pack the navigation frame after the "Select" button
 navigation_frame.pack(pady=5)
