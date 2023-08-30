@@ -138,44 +138,63 @@ def calculate_crit_value(event=None):
             
             conditions_passed = []
             extra_conditions = []
-
+            if CritValue < 0.0:
+                result_label.config(text="Invalid input. Please check your values.")
+                crit_value_label.config(text="")
+                crit_message_label.config(text="")
+                return  # Exit the function if CritValue is less than 0
             if 0.0 <= CritValue < 90.0:
-                crit_message = character["name"] + "'s Crit Value is too low."
-                extra_conditions = ["farm more Crit Rate"]
+                crit_message = f"{character['name']}'s Crit Value is too low."
+                extra_conditions = []
             elif 90.0 <= CritValue < 150.0:
-                crit_message = character["name"] + "'s Crit Value is decent."
-                extra_conditions = ["farm more Crit Rate"]
+                crit_message = f"{character['name']}'s Crit Value is decent."
+                extra_conditions = []
             elif 150.0 <= CritValue < 180.0:
-                crit_message = character["name"] + "'s Crit Value is moderate."
-                extra_conditions = ["farm more Crit Rate"]
+                crit_message = f"{character['name']}'s Crit Value is moderate."
+                extra_conditions = []
             elif 180.0 <= CritValue < 200.0:
-                crit_message = character["name"] + "'s Crit Value is good!"
-                extra_conditions = ["farm more Crit Rate"]
-            elif CritValue >= 200.0:
-                crit_message = character["name"] + "'s Crit Value is enough, go do a Spiral Abyss!"
+                crit_message = f"{character['name']}'s Crit Value is good!"
+                extra_conditions = []
+            elif CritValue >= 200:
+                crit_message = f"{character['name']}'s Crit Value is enough, go do a Spiral Abyss with a proper team members!"
+                extra_conditions = []
             else:
-                if character["CR"] < character["CD"] / 2:
-                    extra_conditions.append("farm more Crit Rate")
-                if character["CR"] < 50:
-                    extra_conditions.append("farm more Crit Rate")
-                if character["CD"] < 120:
-                    extra_conditions.append("farm more Crit Damage")
-                if character["CR"] > 75:
-                    extra_conditions.append("go for more Crit Damage")
+                crit_message = ("Invalid input. Please check your values.")
+                extra_conditions = ["-"]
 
-            if CritValue < 200:
-                conditions_passed = extra_conditions
-
-            if len(conditions_passed) > 0:
-                crit_message += " Please " + " and ".join(conditions_passed)
+            # Check additional conditions
+            if character["CR"] < 40:
+                if character["CR"] < character["CD"] / 2 or CritValue < 200:
+                    extra_conditions.append("also look for more Crit Rate")
+                if character["CD"] < 100:
+                    extra_conditions.append("also look for more Crit Damage")
+            if character["CR"] > 70 and character["CD"] < 140:
+                extra_conditions.append("go for more Crit Damage")
             
-            # Split the message into two lines if necessary
+            
+            # Ensure unique extra conditions
+            unique_extra_conditions = list(set(extra_conditions))
+
+            # Construct the final message
+            if len(unique_extra_conditions) > 0:
+                crit_message += ", " + ", ".join(unique_extra_conditions)
+                    
+            # Split the message into multiple lines if necessary
             if len(crit_message) > 50:
-                crit_message_parts = crit_message.split(". ")
-                crit_message_part1 = crit_message_parts[0]
-                crit_message_part2 = ". ".join(crit_message_parts[1:])
-                crit_message = crit_message_part1 + "\n" + crit_message_part2
-            
+                words = crit_message.split()
+                lines = []
+                current_line = words[0]
+                
+                for word in words[1:]:
+                    if len(current_line) + len(word) + 1 <= 50:
+                        current_line += " " + word
+                    else:
+                        lines.append(current_line)
+                        current_line = word
+                
+                lines.append(current_line)
+                crit_message = "\n".join(lines)
+
             crit_message_label.config(text=crit_message)
 
         except ValueError:
@@ -186,7 +205,8 @@ def calculate_crit_value(event=None):
         result_label.config(text="Please fill in all the input fields.")
         crit_value_label.config(text="")
         crit_message_label.config(text="")  # Clear the crit message
-        
+
+
 
 def start_calculator():
     banner_label.pack_forget()  # Hide the banner
