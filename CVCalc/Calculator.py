@@ -82,6 +82,11 @@ def update_character():
 
     character = characters[current_character_index]
 
+    crit_rate_label.config(text=f"Enter {character['name']}'s Crit Rate:")
+    weapon_crit_rate_label.config(text=f"Enter {character['name']}'s weapon Crit Rate. If not available, type 0:")
+    crit_damage_label.config(text=f"Enter {character['name']}'s Crit Damage:")
+    weapon_crit_damage_label.config(text=f"Enter {character['name']}'s weapon Crit Damage. If not available, type 0:")
+
     crit_rate_entry.delete(0, tk.END)
     crit_rate_entry.insert(0, character["CR"])
 
@@ -105,6 +110,7 @@ def update_character():
     # Update crit value label
     calculate_crit_value()
 
+
 def calculate_crit_value(event=None):
     global current_character_index
     character = characters[current_character_index]
@@ -125,30 +131,62 @@ def calculate_crit_value(event=None):
             NewCD = (character["CD"] - (50.0 + character["WeaCD"]))
 
             CritValue = NewCR + NewCD
+            crit_message = ""
 
-            result_label.config(text="Character Crit Value:", font=("Trebuchet MS", 20))
-            crit_value_label.config(text=f"{CritValue:.1f}", font=("Trebuchet MS", 24, "bold"))
+            result_label.config(text="Character Crit Value:", font=("Trebuchet MS", 16))
+            crit_value_label.config(text=f"{CritValue:.1f}", font=("Trebuchet MS", 28, "bold"))
             
+            conditions_passed = []
+            extra_conditions = []
+
             if 0.0 <= CritValue < 90.0:
-                crit_message_label.config(text="Your character's Crit Value is too low.")
+                crit_message = character["name"] + "'s Crit Value is too low."
+                extra_conditions = ["farm more Crit Rate"]
             elif 90.0 <= CritValue < 150.0:
-                crit_message_label.config(text="Your character's Crit Value is decent.")
+                crit_message = character["name"] + "'s Crit Value is decent."
+                extra_conditions = ["farm more Crit Rate"]
             elif 150.0 <= CritValue < 180.0:
-                crit_message_label.config(text="Your character's Crit Value is moderate.")
+                crit_message = character["name"] + "'s Crit Value is moderate."
+                extra_conditions = ["farm more Crit Rate"]
             elif 180.0 <= CritValue < 200.0:
-                crit_message_label.config(text="Your character's Crit Value is good!")
+                crit_message = character["name"] + "'s Crit Value is good!"
+                extra_conditions = ["farm more Crit Rate"]
             elif CritValue >= 200.0:
-                crit_message_label.config(text=character["name"] + "'s Crit Value is enough, go do a Spiral Abyss!")
+                crit_message = character["name"] + "'s Crit Value is enough, go do a Spiral Abyss!"
             else:
-                crit_message_label.config(text="")
+                if character["CR"] < character["CD"] / 2:
+                    extra_conditions.append("farm more Crit Rate")
+                if character["CR"] < 50:
+                    extra_conditions.append("farm more Crit Rate")
+                if character["CD"] < 120:
+                    extra_conditions.append("farm more Crit Damage")
+                if character["CR"] > 75:
+                    extra_conditions.append("go for more Crit Damage")
+
+            if CritValue < 200:
+                conditions_passed = extra_conditions
+
+            if len(conditions_passed) > 0:
+                crit_message += " Please " + " and ".join(conditions_passed)
+            
+            # Split the message into two lines if necessary
+            if len(crit_message) > 50:
+                crit_message_parts = crit_message.split(". ")
+                crit_message_part1 = crit_message_parts[0]
+                crit_message_part2 = ". ".join(crit_message_parts[1:])
+                crit_message = crit_message_part1 + "\n" + crit_message_part2
+            
+            crit_message_label.config(text=crit_message)
 
         except ValueError:
             result_label.config(text="Invalid input. Please check your values.")
             crit_value_label.config(text="")
+            crit_message_label.config(text="")
     else:
         result_label.config(text="Please fill in all the input fields.")
         crit_value_label.config(text="")
         crit_message_label.config(text="")  # Clear the crit message
+        
 
 def start_calculator():
     banner_label.pack_forget()  # Hide the banner
@@ -195,11 +233,14 @@ def update_select_button_state(event=None):
     else:
         select_character_button.config(state="disabled")
 
+# Function to quit the program
+def quit_program():
+    root.destroy()
 
 root = tk.Tk()
 root.title("Character Crit Value Calculator")
-root.geometry("700x925")  # Set the window's fixed width and height
-root.resizable(False, False)  # Disable resizing in both directions
+root.geometry("700x1060")  # Set the window's fixed width and height
+root.resizable(False, True)  # Disable resizing in Left and Right direction
 
 
 # Load and display the Genshin Impact banner
@@ -216,7 +257,7 @@ image_label = tk.Label(root, image=image)
 image_label.pack()
 
 # Create a "Start" button to initiate the calculator
-start_button = tk.Button(root, text="Start Calculator", command=start_calculator, font=("Trebuchet MS", 16, "bold"))
+start_button = tk.Button(root, text="Start the calculator", command=start_calculator, font=("Segoe UI", 16, "bold"))
 start_button.pack()
 
 # Create a frame to hold the calculator widgets
@@ -228,25 +269,26 @@ root.resizable(False, False)
 title_namelabel = tk.Label(root, font=("Trebuchet MS", 18))
 title_namelabel.pack(pady=10)
 
-title_label = tk.Label(root, font=("Trebuchet MS", 24, "bold"))
+title_label = tk.Label(root, font=("Lucida Sans", 24, "bold"))
 title_label.pack(pady=10)
 
-crit_rate_label = tk.Label(root, text="Enter character's Crit Rate:", font=("Open Sans", 13))
+
+crit_rate_label = tk.Label(root, text=f"Enter {character['name']}'s Crit Rate:", font=("Open Sans", 13))
 crit_rate_label.pack()
 crit_rate_entry = tk.Entry(root, justify="center", font=("Open Sans", 12))
 crit_rate_entry.pack()
 
-weapon_crit_rate_label = tk.Label(root, text="Enter character weapon's Crit Rate. If not available, type 0:", font=("Open Sans", 13))
+weapon_crit_rate_label = tk.Label(root, text=f"Enter {character['name']}'s weapon Crit Rate. If not available, type 0:", font=("Open Sans", 13))
 weapon_crit_rate_label.pack()
 weapon_crit_rate_entry = tk.Entry(root, justify="center", font=("Open Sans", 12))
 weapon_crit_rate_entry.pack()
 
-crit_damage_label = tk.Label(root, text="Enter character's Crit Damage:", font=("Open Sans", 13))
+crit_damage_label = tk.Label(root, text=f"Enter {character['name']}'s Crit Damage:", font=("Open Sans", 13))
 crit_damage_label.pack()
 crit_damage_entry = tk.Entry(root, justify="center", font=("Open Sans", 12))
 crit_damage_entry.pack()
 
-weapon_crit_damage_label = tk.Label(root, text="Enter character weapon's Crit Damage. If not available, type 0:", font=("Open Sans", 13))
+weapon_crit_damage_label = tk.Label(root, text=f"Enter {character['name']}'s weapon Crit Damage. If not available, type 0:", font=("Open Sans", 13))
 weapon_crit_damage_label.pack()
 weapon_crit_damage_entry = tk.Entry(root, justify="center", font=("Open Sans", 12))
 weapon_crit_damage_entry.pack()
@@ -268,9 +310,13 @@ crit_message_label.pack()
 
 # Create an AutocompleteCombobox for character selection
 character_names = [info["name"] for info in character_info]
-character_selection = AutocompleteCombobox(root, font=("Open Sans", 12))
+character_selection = AutocompleteCombobox(root, font=("Open Sans", 13), height=15)  # Increase the height parameter
 character_selection.set_completion_list(character_names)
 character_selection.pack()
+
+# Add a label below the dropdown
+note_label = tk.Label(root, text="Select a character from the dropdown or type to search.", font=("Open Sans", 10), fg="gray")
+note_label.pack()
 
 # Bind the search bar's text variable to the callback function
 character_selection.bind("<<ComboboxSelected>>", update_select_button_state)
@@ -299,6 +345,10 @@ select_button_frame.pack(pady=5)
 # Create "Select Character" button
 select_character_button = tk.Button(select_button_frame, text="Select this character from dropbox", command=select_character, font=("Trebuchet MS", 14))
 select_character_button.pack()
+
+# Create a "Quit" button
+quit_button = tk.Button(root, text="Quit", command=quit_program, font=("Trebuchet MS", 14))
+quit_button.pack(side="right")
 
 # Pack the select_button_frame after the navigation_frame
 select_button_frame.pack()
