@@ -147,6 +147,7 @@ def calculate_crit_value(event=None):
     else:
         result_label.config(text="Please fill in all the input fields.")
         crit_value_label.config(text="")
+        crit_message_label.config(text="")  # Clear the crit message
 
 def start_calculator():
     banner_label.pack_forget()  # Hide the banner
@@ -168,8 +169,11 @@ def on_search_bar_change(event):
     update_select_button_state()
     
 def select_character():
+    global current_character_index
+    current_character_index = character_names.index(character_selection.get())
     update_character()
     select_character_button.config(state="disabled")
+    crit_message_label.config(text="")  # Clear the crit message
     character_selection.set("")  # Clear the search box
 
 def next_character():
@@ -184,13 +188,13 @@ def previous_character():
     
 root = tk.Tk()
 root.title("Character Crit Value Calculator")
-root.geometry("650x900")  # Set the window's fixed width and height
+root.geometry("700x925")  # Set the window's fixed width and height
 root.resizable(False, False)  # Disable resizing in both directions
 
 
 # Load and display the Genshin Impact banner
 banner_image = Image.open("picture/Genshin_Impact_logo.png")
-banner_image = banner_image.resize((650, 200), Image.ANTIALIAS)
+banner_image = banner_image.resize((650, 270), Image.LANCZOS)
 banner_photo = ImageTk.PhotoImage(banner_image)
 banner_label = tk.Label(root, image=banner_photo)
 banner_label.image = banner_photo
@@ -260,7 +264,8 @@ character_selection.pack()
 
 # Bind the search bar's text variable to the callback function
 character_selection.bind("<<ComboboxSelected>>", update_select_button_state)
-character_selection.bind("<KeyRelease>", update_select_button_state)
+character_selection.bind("<KeyRelease>", on_search_bar_change)
+
 
 # Create "Select Character" button
 select_character_button = tk.Button(root, text="Select Character", command=select_character, font=("Trebuchet MS", 14))
