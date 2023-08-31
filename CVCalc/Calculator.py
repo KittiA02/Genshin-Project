@@ -127,8 +127,15 @@ def calculate_crit_value(event=None):
             character["CD"] = float(crit_damage)
             character["WeaCD"] = float(weapon_crit_damage)
 
-            NewCR = ((character["CR"] - (5.0 + character["WeaCR"])) * 2.0)
-            NewCD = (character["CD"] - (50.0 + character["WeaCD"]))
+            NewCR = (((character["CR"] - 5.0) - character["WeaCR"]) * 2.0)
+            NewCD = ((character["CD"] - 50.0) - character["WeaCD"])
+            
+            # Adjust for passive Crit Rate and Crit Damage
+            if character["name"] in ["Arataki Itto", "Diluc", "Lyney", "Wanderer", "Xiao", "Yae Miko", "Yelan", "Yoimiya"]:
+                NewCR -= 38.4
+
+            if character["name"] in ["Cyno", "Eula", "Ganyu", "Hu Tao", "Kamisato Ayaka", "Kamisato Ayato", "Keqing"]:
+                NewCD -= 38.4
 
             CritValue = NewCR + NewCD
             crit_message = ""
